@@ -183,30 +183,84 @@ export function StudioScreen({ song, ensemble, onExit, onShowMetrics }: StudioSc
         <main className="flex-1 flex flex-col">
           {/* Canvas dividido en 4 secciones */}
           <div className="flex-1 grid grid-rows-2 p-4 gap-4">
-            {/* 3 cuadrados en la parte superior */}
-            <div className="grid grid-cols-3 gap-4">
-              {/* Cuadrado 1 - Vista 3D Principal */}
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
-                <AvatarStage ensemble={instruments} isPlaying={isPlaying} tempo={currentTempo} />
-              </div>
-              {/* Cuadrado 2 - Vista de Cámara */}
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">📹</div>
-                    <p className="text-sm">Marinaaaaa</p>
+            {/* Cuadrados superiores - Dinámicos según instrumentos */}
+            <div className={`grid gap-4 ${instruments.length === 0 ? 'grid-cols-3' :
+                instruments.length === 1 ? 'grid-cols-1' :
+                  instruments.length === 2 ? 'grid-cols-2' :
+                    instruments.length === 3 ? 'grid-cols-3' :
+                      'grid-cols-4'
+              }`}>
+              {instruments.length === 0 ? (
+                // Estado vacío - mostrar 3 cuadrados placeholder
+                <>
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🎭</div>
+                        <p className="text-sm">Sin instrumentos</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-              {/* Cuadrado 3 - Vista de Audio */}
-              <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
-                <div className="h-full flex items-center justify-center text-slate-400">
-                  <div className="text-center">
-                    <div className="text-4xl mb-2">🎵</div>
-                    <p className="text-sm"> Instrumento</p>
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">📹</div>
+                        <p className="text-sm">Cámara</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                  <div className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+                    <div className="h-full flex items-center justify-center text-slate-400">
+                      <div className="text-center">
+                        <div className="text-4xl mb-2">🎵</div>
+                        <p className="text-sm">Audio</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                // Mostrar un rectángulo por instrumento
+                instruments.map((instrument) => (
+                  <div key={instrument.id} className="bg-slate-800/50 border border-slate-700 rounded-lg overflow-hidden">
+                    <div className="h-full flex flex-col items-center justify-center text-slate-300 p-4">
+                      <div className={`text-6xl mb-3 ${isPlaying ? 'animate-pulse' : ''}`}>
+                        {instrument.avatar}
+                      </div>
+                      <h3 className="text-lg font-medium mb-2">{instrument.name}</h3>
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Badge
+                          variant={instrument.muted ? "destructive" : "outline"}
+                          className="text-xs"
+                        >
+                          {instrument.muted ? "Mute" : "Activo"}
+                        </Badge>
+                        {instrument.solo && (
+                          <Badge variant="default" className="text-xs bg-yellow-600">
+                            Solo
+                          </Badge>
+                        )}
+                      </div>
+                      {isPlaying && (
+                        <div className="flex justify-center space-x-1">
+                          {[...Array(4)].map((_, i) => (
+                            <div
+                              key={i}
+                              className="w-2 h-2 bg-fuchsia-500 rounded-full animate-pulse"
+                              style={{
+                                animationDelay: `${(i * 60) / currentTempo}s`,
+                                animationDuration: `${60 / currentTempo}s`
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <div className="mt-2 text-xs text-slate-400">
+                        Vol: {instrument.volume}%
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
             {/* 1 rectángulo en la parte inferior - MediaPipe */}
             <div>
